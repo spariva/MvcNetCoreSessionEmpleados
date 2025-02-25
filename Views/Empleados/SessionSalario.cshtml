@@ -1,0 +1,12 @@
+﻿@model List<Empleado>
+
+<h1>Salario de Empleados</h1>
+
+<p><a asp-controller="Empleados" asp-action="SumaSalarial">Mostrar suma</a></p>
+
+<ul>
+    @foreach(Empleado empleado in Model){
+        <li>@empleado.Apellido <a asp-controller="Empleados" asp-action="SessionSalario" asp-route-salario="@empleado.Salario">
+            Almacenar salario @empleado.Salario</a></li>
+    }
+</ul>
