@@ -1,0 +1,19 @@
+﻿@model List<Empleado>
+
+<p><a asp-controller="Empleados" asp-action="SessionV6">Mostrar emps</a></p>
+
+@if (Model == null)
+{
+    <h2 style="color:red">
+        No tiene almacenades empleades en Session
+    </h2>
+}
+else
+{
+    @foreach (Empleado empleado in Model)
+    {
+        <li class="text-primary">@empleado.Apellido 
+            <a asp-controller="Empleados" asp-action="CestaBorrar" asp-route-id="@empleado.IdEmpleado">Borrar</a>
+        </li>
+    }
+}

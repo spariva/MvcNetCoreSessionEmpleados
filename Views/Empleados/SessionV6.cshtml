@@ -1,0 +1,21 @@
+﻿@model List<Empleado> @{    //NECESITAMOS SESSION PARA SABER EL DIBUJO A REALIZAR    List<int> ids = Context.Session.GetObject<List<int>>("Ids");} <h1 style="color:blue">Session Empleados V6</h1> <p><a asp-controller="Empleados" asp-action="CestaOK">Mostrar EMPs</a></p> <ul>
+@foreach (Empleado empleado in Model){
+    <li class="list-group-item list-group-item-info">
+        @empleado.Apellido
+            @if(ids == null) {
+                <a asp-controller="Empleados"
+                   asp-action="SessionV6"
+                   asp-route-idempleado="@empleado.IdEmpleado">
+                    Almacenar empleado
+                </a>
+            }else{
+                //PREGUNTAMOS SI EL EMPLEADO QUE ESTAMOS DIBUJANDO
+                //ESTA DENTRO DE SESSION
+                if (ids.Contains(empleado.IdEmpleado))
+                {                    <p>Check</p>                }else{
+                    <a asp-controller="Empleados" asp-action="SessionV6" asp-route-idEmpleado="@empleado.IdEmpleado"></a>
+                }
+            }
+    </li>
+    }
+</ul>

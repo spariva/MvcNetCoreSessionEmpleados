@@ -5,13 +5,13 @@ namespace MvcNetCoreSessionEmpleados.Extensions
     public static class SessionExtension
     {
 
-        public static void setObject(this ISession session, string key, object value)
+        public static void SetObject(this ISession session, string key, object value)
         {
             string data = JsonConvert.SerializeObject(value);
             session.SetString(key, data);
         }
 
-        public static T getObject<T>(this ISession session, string key)
+        public static T GetObject<T>(this ISession session, string key)
         {
             string data = session.GetString(key);
             if (data == null)
@@ -21,6 +21,11 @@ namespace MvcNetCoreSessionEmpleados.Extensions
 
             T value = JsonConvert.DeserializeObject<T>(data);
             return value;
+        }
+
+        public static void RemoveObject(this ISession session, string key)
+        {
+            session.Remove(key);
         }
     }
 }

@@ -1,0 +1,26 @@
+﻿@model List<Empleado>
+
+@{
+    List<Empleado> empleadosCesta = (List<Empleado>)ViewBag.EmpleadosCesta;
+}
+
+<h1>Empleados V5</h1>
+
+<p><a asp-controller="Empleados" asp-action="CestaOK">Mostrar EMPs</a></p>
+
+<ul class="bg-danger-subtle">
+    @foreach (Empleado empleado in Model)
+    {
+        <li>
+            @empleado.Apellido <a asp-controller="Empleados" asp-action="SessionV5" asp-route-idEmpleado="@empleado.IdEmpleado">
+                Almacenar empleado @empleado.Apellido
+            </a>
+        </li>
+    }
+    @foreach (Empleado empleado in empleadosCesta)
+    {
+        <li>
+            @empleado.Apellido (Check icono)
+        </li>
+    }
+</ul>
