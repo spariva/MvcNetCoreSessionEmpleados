@@ -10,6 +10,11 @@
     <link rel="stylesheet" href="~/MvcNetCoreSessionEmpleados.styles.css" asp-append-version="true" />
 </head>
 <body>
+    @{
+        List<int> almacenados = Context.Session.GetObject<List<int>>("Ids");
+
+        List<Empleado> favs = memoryCache.Get<List<Empleado>>("Favoritos");
+    }
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -26,6 +31,23 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Empleados" asp-action="CestaOK">Cesta Empleados</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-controller="Empleados" asp-action="EmpleadosFavoritos">Favs</a>
+                        </li>
+                        @if (favs != null)
+                        {
+                            <li class="nav-item">
+                                <h3 class="text-info-emphasis">favs: @favs.Count()</h3>
+
+                            </li>
+                        }
+                        @if (almacenados != null)
+                        {
+                            <li class="nav-item">
+                                <h3 class="text-info-emphasis">session emps: @almacenados.Count()</h3>
+
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

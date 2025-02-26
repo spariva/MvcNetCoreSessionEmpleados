@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using MvcNetCoreSessionEmpleados.Extensions;
 using MvcNetCoreSessionEmpleados.Models;
 using MvcNetCoreSessionEmpleados.Repositories;
@@ -8,10 +9,12 @@ namespace MvcNetCoreSessionEmpleados.Controllers
     public class EmpleadosController : Controller
     {
         private RepositoryEmpleados repo;
+        private IMemoryCache memoryCache;
 
-        public EmpleadosController(RepositoryEmpleados repo)
+        public EmpleadosController(RepositoryEmpleados repo, IMemoryCache memoryCache)
         {
             this.repo = repo;
+            this.memoryCache = memoryCache;
         }
 
         public async Task<IActionResult> CestaBorrar(int id)
@@ -29,6 +32,11 @@ namespace MvcNetCoreSessionEmpleados.Controllers
             {
                 ViewBag.Mensaje = "No hay empleados en la cesta";
                 return View();
+            } else if (idsEmpleados.Count == 0)
+            {
+                ViewBag.Mensaje = "No hay empleados en la cesta";
+                HttpContext.Session.Remove("Ids");
+                return View();
             }
             //recupero los empleados con los ids almacenados en la sesión, si no devuelve nada, nos trae null
             // y en la vista con un if no pintamos nada.
@@ -36,55 +44,104 @@ namespace MvcNetCoreSessionEmpleados.Controllers
             return View(empleados);
         }
 
-        ////V6
+        //public IActionResult EmpleadosFavoritos()
+        //{
+        //    if (this.memoryCache.Get("Favoritos") == null)
+        //    {
+        //        ViewBag.Mensaje = "No hay empleados favoritos";
+        //        return View();
+        //    }
+        //    else
+        //    {
+        //        List<Empleado> empleados = this.memoryCache.Get<List<Empleado>>("Favoritos");
+        //        return View(empleados);
+        //    }
+        //}
+
+        public IActionResult FavoritosBorrar(int? id)
+        {
+            List<Empleado> favs = this.memoryCache.Get<List<Empleado>>("Favoritos");
+            if(favs.Count == 1)
+            {
+                this.memoryCache.Remove("Favoritos");
+                return RedirectToAction("EmpleadosFavoritos");
+            }
+            Empleado emp = favs.SingleOrDefault(x => x.IdEmpleado == id);
+            favs.Remove(emp);
+            this.memoryCache.Set("Favoritos", favs);
+            return RedirectToAction("EmpleadosFavoritos");
+        }
+
+        public IActionResult EmpleadosFavoritos()
+        {
+           return View();
+        }
+
+        public async Task<IActionResult> SessionV6(int? idEmpleado, int? idFavorito)
+        {
+            if (idFavorito != null)
+            {
+                List<Empleado> empleadosFavs;
+                if (this.memoryCache.Get("Favoritos") == null)
+                {
+                    empleadosFavs = new List<Empleado>();
+                }
+                else
+                {
+                    empleadosFavs = this.memoryCache.Get<List<Empleado>>("Favoritos");
+                }
+                Empleado emp = await this.repo.FindEmpleadoAsync(idFavorito.Value);
+                empleadosFavs.Add(emp);
+                this.memoryCache.Set("Favoritos", empleadosFavs);
+            }
+
+
+
+                if (idEmpleado != null)
+            {
+                List<int> ids;
+
+                if (HttpContext.Session.GetObject<List<int>>("Ids") != null)
+                {
+                    ids = HttpContext.Session.GetObject<List<int>>("Ids");
+                }
+                else
+                {
+                    ids = new List<int>();
+                }
+
+                ids.Add(idEmpleado.Value);
+                HttpContext.Session.SetObject("Ids", ids);
+                ViewBag.Mensaje = "Empleado almacenado";
+            }
+
+            List<Empleado> empleados = await this.repo.GetEmpleadosAsync();
+            return View(empleados);
+        }
+
         //public async Task<IActionResult> SessionV6(int? idEmpleado)
         //{
         //    if (idEmpleado != null)
         //    {
-        //        List<int> idsEmpleados;
-        //        if (HttpContext.Session.GetObject<List<int>>("Ids") == null)
+        //        List<int> ids;
+
+        //        if (HttpContext.Session.GetObject<List<int>>("Ids") != null)
         //        {
-        //            idsEmpleados = new List<int>();
+        //            ids = HttpContext.Session.GetObject<List<int>>("Ids");
         //        }
         //        else
         //        {
-        //            idsEmpleados = HttpContext.Session.GetObject<List<int>>("Ids");
+        //            ids = new List<int>();
         //        }
-        //        idsEmpleados.Add(idEmpleado.Value);
-        //        HttpContext.Session.SetObject("Ids", idsEmpleados);
+
+        //        ids.Add(idEmpleado.Value);
+        //        HttpContext.Session.SetObject("Ids", ids);
+        //        ViewBag.Mensaje = "Empleado almacenado";
         //    }
 
         //    List<Empleado> empleados = await this.repo.GetEmpleadosAsync();
         //    return View(empleados);
         //}
-
-        public async Task<IActionResult> SessionV6(int? idEmpleado)
-        {
-            if (idEmpleado != null)
-            {
-                //ALMACENAREMOS LO MINIMO QUE PODAMOS (int) 
-                List<int> idsEmpleados;
-                if (HttpContext.Session.GetObject<List<int>>("Ids") == null)
-                {
-                    //NO EXISTE Y CREAMOS LA COLECCION 
-                    idsEmpleados = new List<int>();
-                }
-                else
-                {
-                    //EXISTE Y RECUPERAMOS LA COLECCION 
-                    idsEmpleados = HttpContext.Session.GetObject<List<int>>("Ids");
-                }
-                idsEmpleados.Add(idEmpleado.Value);
-                //REFRESCAMOS LOS DATOS DE SESSION 
-                HttpContext.Session.SetObject("Ids", idsEmpleados);
-                ViewData["MENSAJE"] = "Empleados almacenados: "
-                + idsEmpleados.Count;
-            }
-            //COMPROBAMOS SI TENEMOS IDS EN SESSION 
-            List<int> ids = HttpContext.Session.GetObject<List<int>>("Ids");
-            List<Empleado> empleados = await this.repo.GetEmpleadosAsync();
-            return View(empleados);
-        }
 
         //V5: Muestra check o no según esté en session
         public async Task<IActionResult> SessionV5(int? idEmpleado)

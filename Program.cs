@@ -1,3 +1,4 @@
+
 using Microsoft.EntityFrameworkCore;
 using MvcNetCoreSessionEmpleados.Data;
 using MvcNetCoreSessionEmpleados.Repositories;
@@ -12,6 +13,8 @@ builder.Services.AddDbContext<HospitalContext>(options => options.UseSqlServer(c
 
 builder.Services.AddTransient<RepositoryEmpleados>();
 builder.Services.AddSession();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 

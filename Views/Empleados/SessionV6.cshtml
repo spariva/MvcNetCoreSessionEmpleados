@@ -1,21 +1,142 @@
-﻿@model List<Empleado> @{    //NECESITAMOS SESSION PARA SABER EL DIBUJO A REALIZAR    List<int> ids = Context.Session.GetObject<List<int>>("Ids");} <h1 style="color:blue">Session Empleados V6</h1> <p><a asp-controller="Empleados" asp-action="CestaOK">Mostrar EMPs</a></p> <ul>
-@foreach (Empleado empleado in Model){
-    <li class="list-group-item list-group-item-info">
-        @empleado.Apellido
-            @if(ids == null) {
-                <a asp-controller="Empleados"
-                   asp-action="SessionV6"
-                   asp-route-idempleado="@empleado.IdEmpleado">
-                    Almacenar empleado
-                </a>
-            }else{
-                //PREGUNTAMOS SI EL EMPLEADO QUE ESTAMOS DIBUJANDO
-                //ESTA DENTRO DE SESSION
-                if (ids.Contains(empleado.IdEmpleado))
-                {                    <p>Check</p>                }else{
-                    <a asp-controller="Empleados" asp-action="SessionV6" asp-route-idEmpleado="@empleado.IdEmpleado"></a>
-                }
-            }
-    </li>
+﻿@* @model List<Empleado> *@
+
+@* @{ *@
+@*     //NECESITAMOS SESSION PARA SABER EL DIBUJO A REALIZAR *@
+@*     List<int> ids = Context.Session.GetObject<List<int>>("Ids"); *@
+@* } *@
+
+@* <h1 style="color:blue">Session Empleados V6</h1> *@
+
+@* <p><a asp-controller="Empleados" asp-action="CestaOK">Mostrar EMPs</a></p> *@
+
+@* <ul> *@
+@* @foreach (Empleado empleado in Model){ *@
+@*     <li class="list-group-item list-group-item-info"> *@
+@*         @empleado.Apellido *@
+@*             @if(ids == null) { *@
+@*                 <a asp-controller="Empleados" *@
+@*                    asp-action="SessionV6" *@
+@*                    asp-route-idempleado="@empleado.IdEmpleado"> *@
+@*                     Almacenar empleado *@
+@*                 </a> *@
+@*             }else{ *@
+@*                 //PREGUNTAMOS SI EL EMPLEADO QUE ESTAMOS DIBUJANDO *@
+@*                 //ESTA DENTRO DE SESSION *@
+@*                 if (ids.Contains(empleado.IdEmpleado)) *@
+@*                 { *@
+@*                     <p>Check</p> *@
+@*                 }else{ *@
+@*                     <a asp-controller="Empleados" asp-action="SessionV6" asp-route-idEmpleado="@empleado.IdEmpleado"></a> *@
+@*                 } *@
+@*             } *@
+@*     </li> *@
+@*     } *@
+@* </ul> *@
+
+@model IEnumerable<MvcNetCoreSessionEmpleados.Models.Empleado>
+
+
+
+@{
+    ViewData["Title"] = "SessionEmpleadosV5";
+
+    List<int> almacenados = Context.Session.GetObject<List<int>>("Ids");
+
+    if (almacenados == null)
+    {
+        almacenados = new List<int>();
     }
-</ul>
+
+    List<Empleado> favs = memoryCache.Get<List<Empleado>>("Favoritos") ?? new List<Empleado>();
+
+    if (favs == null)
+    {
+        favs = new List<Empleado>();
+    }
+}
+
+<h1>SessionV6</h1>
+
+<p>
+    <a asp-controller="Empleados" asp-action="CestaOK">Empleados almacenados</a>
+</p>
+
+@if (almacenados != null) {
+    <h3 class="text-info-emphasis">Empleados almacenados en Session @almacenados.Count()</h3>
+}
+
+@if (favs != null)
+{
+    <h3 class="text-info-emphasis">Empleados favs en Session @favs.Count()</h3>
+}
+
+<h3>@ViewBag.Mensaje</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.IdEmpleado)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Apellido)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Oficio)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Salario)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IdDepartamento)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IdEmpleado) 
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Apellido)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Oficio)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Salario)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IdDepartamento)
+                </td>
+                <td>
+                    @if (favs.Any(x => x.IdEmpleado == item.IdEmpleado))
+                    {
+                        <img src="https://imgs.search.brave.com/fvXYN1T7X28RbKoAsDg0Lre674CrpIRWOGMfTW9belw/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9jZG4y/Lmljb25maW5kZXIu/Y29tL2RhdGEvaWNv/bnMvem9oYW5pbWFz/aS1idW5kbGUtMi81/MTIvaGVhcnRfMi0x/MjgucG5n" width="40" />
+                    }
+                    else
+                    {
+                        <a asp-controller="Empleados" asp-action="SessionV6" asp-route-idFavorito="@item.IdEmpleado">
+                            <img src="https://imgs.search.brave.com/2jVBDFkUonU-HGRS7w8fQ1gIrAXDcT2IPg0Pci3OID0/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9jZG4y/Lmljb25maW5kZXIu/Y29tL2RhdGEvaWNv/bnMvY2lyY3VsYXIt/aWNvbnMtZmlsbGVk/Lzc4L0NpcmN1bGFy/X0hlYXJ0LTEyOC5w/bmc" width="40" />
+
+                        </a>
+                    }
+                </td>
+                <td>
+                    @if (almacenados.Contains(item.IdEmpleado))
+                    {
+                        <img src="https://static.vecteezy.com/system/resources/thumbnails/011/858/556/small_2x/green-check-mark-icon-with-circle-tick-box-check-list-circle-frame-checkbox-symbol-sign-png.png" width="40" />
+                    }
+                    else
+                    {
+                        <a asp-controller="Empleados" asp-action="SessionV6" asp-route-idEmpleado="@item.IdEmpleado">Almacenar</a>
+                    }
+                </td>
+                
+            </tr>
+        }
+    </tbody>
+</table>

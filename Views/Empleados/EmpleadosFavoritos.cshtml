@@ -1,0 +1,22 @@
+﻿@{
+    List<Empleado> favs = (List<Empleado>)memoryCache.Get("Favoritos");
+}
+
+<p><a asp-controller="Empleados" asp-action="SessionV6">Mostrar emps</a></p>
+
+@if (favs == null)
+{
+    <h2 style="color:red">
+        No tiene almacenades empleades Favs
+    </h2>
+}
+else
+{
+    @foreach (Empleado empleado in favs)
+    {
+        <li class="text-primary">
+            @empleado.Apellido
+            <a asp-controller="Empleados" asp-action="FavoritosBorrar" asp-route-id="@empleado.IdEmpleado">Borrar</a>
+        </li>
+    }
+}
